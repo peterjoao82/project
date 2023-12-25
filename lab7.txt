@@ -1,0 +1,44 @@
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
+import sklearn.metrics as sm
+import pandas as pd
+import numpy as np
+
+iris_dataset=pd.read_csv('iris.csv')
+iris_dataset['Targets']=(iris_dataset.Class.map({'Iris-setosa':0,'Iris-versicolor':1,'Iris-virginica':2}))
+X=iris_dataset[['Sepal_Length','Sepal_Width','Petal_Length','Petal_Width']]
+Y=iris_dataset[['Targets']]
+
+model=KMeans(n_clusters=3)
+model.fit(X)
+print('Model Labels:\n',model.labels_)
+gmm=GaussianMixture(n_components=3)
+gmm.fit(X)
+Y_gmm=gmm.predict(X)
+print('GMM labels:\n',Y_gmm)
+colormap=np.array(['red','lime','black'])
+plt.figure(figsize=(10,10))
+plt.subplot(2,2,1)
+plt.scatter(X.Petal_Length,X.Petal_Width,c=colormap[Y.Targets],s=40)
+plt.title('real clustering')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+
+plt.subplot(2,2,2)
+plt.scatter(X.Petal_Length,X.Petal_Width,c=colormap[model.labels_],s=40)
+plt.title('K-Means clustering')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+
+plt.subplot(2,2,3)
+plt.scatter(X.Petal_Length,X.Petal_Width,c=colormap[Y_gmm],s=40)
+plt.title('EM clustering')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+
+print('Completeness Score of K-Means:%f'%sm.completeness_score(Y.Targets,model.labels_))
+print('Accuracy of K-Means:%f'%sm.accuracy_score(Y.Targets,model.labels_))
+print('\n')
+print('Completeness Score of EM:%f'%sm.completeness_score(Y.Targets,Y_gmm))
+print('Accuracy of EM:%f'%sm.accuracy_score(Y.Targets,Y_gmm))
